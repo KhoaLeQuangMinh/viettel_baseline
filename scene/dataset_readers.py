@@ -114,13 +114,26 @@ def readColmapCameras(cam_extrinsics, cam_intrinsics, depths_params, images_fold
             except:
                 print("\n", key, "not found in depths_params")
 
-        image_path = os.path.join(images_folder, extr.name)
         image_name = extr.name
+        is_test_image = image_name in test_cam_names_list
+        
+        if is_test_image:
+            # Test images are located in the sister "test/images" directory
+            parent_dir = os.path.dirname(os.path.normpath(images_folder))
+            scene_dir = os.path.dirname(parent_dir)
+            test_images_folder = os.path.join(scene_dir, "test", "images")
+            image_path = os.path.join(test_images_folder, image_name)
+        else:
+            image_path = os.path.join(images_folder, image_name)
+            
+        if not os.path.exists(image_path):
+            continue
+
         depth_path = os.path.join(depths_folder, f"{extr.name[:-n_remove]}.png") if depths_folder != "" else ""
 
         cam_info = CameraInfo(uid=uid, R=R, T=T, FovY=FovY, FovX=FovX, depth_params=depth_params,
                               image_path=image_path, image_name=image_name, depth_path=depth_path,
-                              width=width, height=height, is_test=image_name in test_cam_names_list)
+                              width=width, height=height, is_test=is_test_image)
         cam_infos.append(cam_info)
 
     sys.stdout.write('\n')
