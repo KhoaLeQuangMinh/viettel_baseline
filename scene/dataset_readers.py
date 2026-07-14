@@ -220,7 +220,13 @@ def readColmapSceneInfo(path, images, depths, eval, train_test_exp, llffhold=8):
             xyz, rgb, _ = read_points3D_binary(bin_path)
         except:
             xyz, rgb, _ = read_points3D_text(txt_path)
-        storePly(ply_path, xyz, rgb)
+        try:
+            storePly(ply_path, xyz, rgb)
+        except OSError:
+            scene_name = os.path.basename(os.path.dirname(os.path.normpath(path)))
+            ply_path = os.path.join(os.path.abspath("."), f"points3D_{scene_name}.ply")
+            print(f"Source path is read-only. Saving converted PLY to fallback path: {ply_path}")
+            storePly(ply_path, xyz, rgb)
     try:
         pcd = fetchPly(ply_path)
     except:
